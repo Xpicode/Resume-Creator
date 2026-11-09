@@ -48,8 +48,10 @@ export default function TermsPage() {
           <h2>Job Hunt Pass</h2>
           <p>
             The Job Hunt Pass is a one-time payment for 30 days of extra features. It does not renew
-            by itself. Payments are processed by PayMongo; we never see your full card or wallet
-            details. Refunds follow our{" "}
+            by itself. You pay us directly (for example by GCash) and receive a one-time pass code,
+            or pay online through PayMongo when available. We never ask for your card details or
+            wallet PIN. A pass code works once and only for the account that redeems it. Refunds
+            follow our{" "}
             <Link href="/refund-policy" className="text-primary underline">
               Refund Policy
             </Link>

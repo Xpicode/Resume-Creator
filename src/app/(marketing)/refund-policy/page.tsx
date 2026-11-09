@@ -31,7 +31,7 @@ export default function RefundPolicyPage() {
               {SUPPORT_EMAIL}
             </a>{" "}
             within 7 days of payment from the email address of your account. We refund the full
-            amount to the same GCash, Maya or card you paid with.
+            amount the same way you paid (for example, back to your GCash).
           </p>
         </section>
         <section>
@@ -46,10 +46,7 @@ export default function RefundPolicyPage() {
           <ul>
             <li>The pass ends and its remaining AI credits are removed.</li>
             <li>You keep all your resumes and can still edit and download them.</li>
-            <li>
-              Refunds are processed by PayMongo. Depending on your payment method, the money can
-              take a few days to arrive.
-            </li>
+            <li>Depending on how you paid, the money can take a few days to arrive.</li>
           </ul>
         </section>
       </div>

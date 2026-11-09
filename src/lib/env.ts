@@ -17,6 +17,8 @@ const serverEnvSchema = z.object({
     .regex(/^sk_(test|live)_/)
     .optional(),
   PAYMONGO_WEBHOOK_SECRET: z.string().min(10).optional(),
+  // Comma-separated emails that can open /admin (pass codes). Empty = no admins.
+  ADMIN_EMAILS: z.string().optional(),
 });
 
 export type ServerEnv = z.infer<typeof serverEnvSchema>;

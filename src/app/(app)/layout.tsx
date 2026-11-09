@@ -2,6 +2,7 @@ import Link from "next/link";
 import { connection } from "next/server";
 import { buttonClass } from "@/components/ui";
 import { logOut } from "@/features/auth/actions";
+import { isAdmin } from "@/lib/admin";
 import { requireUser } from "@/lib/auth";
 import { SITE_NAME, SUPPORT_EMAIL } from "@/lib/site";
 
@@ -30,6 +31,11 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
           <Link href="/settings" className="text-sm font-medium">
             Settings
           </Link>
+          {isAdmin(user) && (
+            <Link href="/admin" className="text-sm font-medium text-primary">
+              Admin
+            </Link>
+          )}
           {user.is_anonymous ? (
             <Link href="/signup" className={`${buttonClass.primary} px-3 py-1.5 text-sm`}>
               Save my resume

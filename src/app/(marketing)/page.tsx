@@ -70,7 +70,7 @@ const faqs = [
   },
   {
     q: `How does the ${PASS.name} work?`,
-    a: `Pay ${peso(PASS.amountCentavos)} once with GCash, Maya or card for ${PASS.days} days of extra resumes and ${PASS.aiCredits} more AI credits. It doesn't renew by itself. When it ends you keep all your resumes.`,
+    a: `Pay ${peso(PASS.amountCentavos)} once (for example by GCash) and enter the pass code we send you. You get ${PASS.days} days of extra resumes and ${PASS.aiCredits} more AI credits. It doesn't renew by itself. When it ends you keep all your resumes.`,
   },
   {
     q: "Can I get a refund?",
@@ -173,7 +173,7 @@ export default function Home() {
                 <li>Up to {PASS.resumeLimit} resumes — one for each kind of job</li>
                 <li>Tailored copies for each job post</li>
                 <li>{PASS.aiCredits} extra AI credits</li>
-                <li>Pay once with GCash, Maya or card. No auto-renew.</li>
+                <li>Pay once. No auto-renew.</li>
               </ul>
               <Link href="/start" className={`${buttonClass.primary} mt-6 w-full`}>
                 Start free, upgrade anytime

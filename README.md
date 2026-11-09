@@ -37,6 +37,18 @@ Add `ANTHROPIC_API_KEY` to `.env.local` (and Vercel) to turn them on; without it
 - Free plan: 10 AI credits a month (bullet = 1, summary = 1, tailoring = 3). Change `free_monthly_ai_credits()` in the migration and `FREE_MONTHLY_AI_CREDITS` together.
 - Live eval — calls the real API and **costs money** (about $0.10–0.30 per run): `npm run ai:eval`. It prints the average cost per call. Replace the synthetic posts in `tests/eval/job-posts.ts` with the 10 real PH job posts from Phase 0.
 
+## Selling the pass with codes (no PayMongo)
+
+Customers pay you directly (e.g. GCash), you generate a one-time code, they enter it on **Billing**.
+
+1. Put your admin email in `ADMIN_EMAILS` (`.env.local` / Vercel) — comma-separated, confirmed accounts only. An **Admin** link appears in the top menu.
+2. Set your GCash number in `src/lib/site.ts` (`DIRECT_PAYMENT`) — shown on the Billing page.
+3. **Admin → Generate** (1–50 codes, with a note like the buyer and GCash reference). Codes are shown **once**; only a hash is stored.
+4. The customer enters the code on Billing → 30-day pass, same as a paid one. A code works once; 10 tries per hour per user.
+5. **Refund:** Admin → **Revoke** the code → the customer's pass ends immediately.
+
+PayMongo (below) stays in the code but is off until its keys are set; then Billing shows both options.
+
 ## Payments (Phase 3)
 
 Job Hunt Pass: ₱99 for 30 days, one-time (PayMongo: GCash, Maya, card). Price, days and credits live only in `src/features/billing/plans.ts`.
@@ -56,6 +68,8 @@ Job Hunt Pass: ₱99 for 30 days, one-time (PayMongo: GCash, Maya, card). Price,
 3. **Download PDF**. Then **Save my resume** → create an account (confirm via Mailpit). The resume moves to the new account.
 
 ## Before staging / production
+
+**Staging in one go:** from this folder in Git Bash, run `bash scripts/staging-setup.sh`. It walks you through Supabase (Singapore), migrations, Vercel, Turnstile, Supabase login settings and PayMongo test mode, and saves every value to `.env.staging` (git-ignored) to paste into Vercel. The list below is the same work by hand, plus what production adds.
 
 1. **Supabase project (Singapore):** link it and push the migrations (`npx supabase link`, `npx supabase db push`). In the dashboard:
    - Authentication → Sign In / Providers: enable **anonymous sign-ins**, **email confirmations**, minimum password length **10**, **leaked password protection**; add **Google** (OAuth client from Google Cloud).

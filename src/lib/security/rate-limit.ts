@@ -13,6 +13,8 @@ export const RATE_LIMITS = {
   export: { max: 3, seconds: 24 * 60 * 60 },
   // PDF downloads from a public share link, counted against the resume's owner.
   share_pdf: { max: 60, seconds: 60 * 60 },
+  // Pass-code attempts (codes are unguessable; this stops brute force cold).
+  redeem: { max: 10, seconds: 60 * 60 },
 } as const;
 
 export type RateLimitedAction = keyof typeof RATE_LIMITS;

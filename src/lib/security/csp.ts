@@ -11,6 +11,7 @@ export const APP_PATH_PREFIXES = [
   "/resumes",
   "/settings",
   "/billing",
+  "/admin",
   "/onboarding",
   "/login",
   "/signup",

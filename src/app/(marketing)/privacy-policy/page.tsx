@@ -85,10 +85,12 @@ export default function PrivacyPolicyPage() {
         <section>
           <h2>Payments</h2>
           <p>
-            If you buy a pass, PayMongo handles your payment and emails your receipt. We keep a
-            record of the payment (amount, date, status and PayMongo&apos;s reference) — never your
-            card or wallet details. Because the law requires us to keep sales records, this record
-            stays after you delete your account, but it is no longer linked to you.
+            If you pay us directly for a pass, we keep the message you send us (your account email
+            and payment reference) to issue your code and for our sales records. If you pay online,
+            PayMongo handles the payment and emails your receipt. We keep a record of the payment
+            (amount, date, status and PayMongo&apos;s reference) — never your card or wallet
+            details. Because the law requires us to keep sales records, this record stays after you
+            delete your account, but it is no longer linked to you.
           </p>
         </section>
         <section>
