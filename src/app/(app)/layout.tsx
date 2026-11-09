@@ -1,9 +1,12 @@
+import { cookies } from "next/headers";
 import Link from "next/link";
 import { connection } from "next/server";
 import { buttonClass } from "@/components/ui";
 import { logOut } from "@/features/auth/actions";
+import { MERGE_COOKIE, readMergeTicket } from "@/features/auth/merge-ticket";
 import { isAdmin } from "@/lib/admin";
 import { requireUser } from "@/lib/auth";
+import { serverEnv } from "@/lib/env";
 import { SITE_NAME, SUPPORT_EMAIL } from "@/lib/site";
 
 // Logged-in area: strict nonce CSP needs per-request rendering (plan 6.6), and every page
@@ -13,6 +16,11 @@ export const instant = false;
 export default async function AppLayout({ children }: LayoutProps<"/">) {
   await connection();
   const user = await requireUser();
+  // A guest who signed up but hasn't clicked the confirmation email yet (sign-up set this ticket).
+  const awaitingEmail =
+    user.is_anonymous &&
+    readMergeTicket((await cookies()).get(MERGE_COOKIE)?.value, serverEnv().MERGE_TICKET_SECRET) ===
+      user.id;
   return (
     <>
       <header className="border-b border-border/40 bg-white">
@@ -37,9 +45,12 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
             </Link>
           )}
           {user.is_anonymous ? (
-            <Link href="/signup" className={`${buttonClass.primary} px-3 py-1.5 text-sm`}>
-              Save my resume
-            </Link>
+            // On phones the guest banner below carries this link, so the header stays one row.
+            <span className="hidden sm:block">
+              <Link href="/signup" className={`${buttonClass.primary} px-3 py-1.5 text-sm`}>
+                Save my resume
+              </Link>
+            </span>
           ) : (
             <form action={logOut}>
               <button type="submit" className="text-sm font-medium text-muted underline">
@@ -49,7 +60,17 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
           )}
         </nav>
       </header>
-      {user.is_anonymous && (
+      {user.is_anonymous && awaitingEmail && (
+        <p role="status" className="bg-highlight/60 px-4 py-2 text-center text-sm">
+          📧 <strong>Almost done!</strong> Open the link we emailed you to finish creating your
+          account — your resume moves to it automatically. No email?{" "}
+          <Link href="/signup" className="font-medium text-primary underline">
+            Try again
+          </Link>
+          .
+        </p>
+      )}
+      {user.is_anonymous && !awaitingEmail && (
         <p className="bg-primary-soft px-4 py-2 text-center text-sm">
           You&apos;re using a guest session.{" "}
           <Link href="/signup" className="font-medium text-primary underline">

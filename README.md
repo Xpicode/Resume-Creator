@@ -29,6 +29,8 @@ Checks (all must pass before a task is done — see AGENTS.md). Tests in `tests/
 npm run typecheck && npm run lint && npm run format:check && npm test && npm run build
 ```
 
+**Local email confirmation is off** (`supabase/config.toml` → `enable_confirmations = false`), so sign-up logs you in straight away while testing. Staging and production keep it **on** (Supabase dashboard → Authentication → Confirm email; the staging wizard sets it). Emails that are still sent locally (password reset) land in Mailpit: http://127.0.0.1:54324.
+
 ## AI features (Phase 2)
 
 Add `ANTHROPIC_API_KEY` to `.env.local` (and Vercel) to turn them on; without it the AI buttons say "not available" and everything else works. Set a monthly spend limit in the Claude Console.

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { buttonClass, inputClass } from "@/components/ui";
+import { buttonClass } from "@/components/ui";
 import {
   newSection,
   type ResumeSection,
@@ -16,7 +16,9 @@ import { AtsPanel } from "./ats-panel";
 import { DownloadDialog } from "./download-dialog";
 import { PersonalForm } from "./personal-form";
 import { PreviewPane } from "./preview-pane";
+import { nextStep, PERSONAL_STEP, resumeProgress, SECTION_ICONS } from "./progress";
 import { SectionCard } from "./section-card";
+import { StepsBar } from "./steps-bar";
 import { TEMPLATE_OPTIONS } from "./templates";
 import { useAutosave, type SaveStatus } from "./use-autosave";
 
@@ -49,6 +51,9 @@ function statusText(s: SaveStatus, now: number): string {
   }
 }
 
+const elementIdFor = (stepId: string) =>
+  stepId === PERSONAL_STEP ? "personal-info" : `section-${stepId}`;
+
 export function Editor({
   resumeId,
   initial,
@@ -62,8 +67,11 @@ export function Editor({
   const [photoStamp, setPhotoStamp] = useState(0);
   const [tab, setTab] = useState<"edit" | "preview">("edit");
   const [isDesktop, setIsDesktop] = useState(false);
-  const [addType, setAddType] = useState<SectionType>("custom");
   const [now, setNow] = useState(() => Date.now());
+  // Guided editing: one section open at a time, starting with the first unfinished one.
+  const [openId, setOpenId] = useState<string | null>(
+    () => resumeProgress(initial.content).steps.find((s) => !s.done && !s.hidden)?.id ?? null,
+  );
   const { status, version, flush } = useAutosave(resumeId, doc, updatedAt);
 
   useEffect(() => {
@@ -79,6 +87,7 @@ export function Editor({
   }, []);
 
   const sections = doc.content.sections;
+  const { steps, percent } = resumeProgress(doc.content);
   const setSections = (next: ResumeSection[]) =>
     setDoc((d) => ({ ...d, content: { ...d.content, sections: next } }));
   const moveSection = (i: number, dir: -1 | 1) => {
@@ -87,12 +96,49 @@ export function Editor({
     setSections(next);
   };
 
+  /** Open a step and bring it into view (after React has opened it). */
+  const goTo = (id: string) => {
+    setOpenId(id);
+    setTab("edit");
+    setTimeout(() => {
+      const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      document
+        .getElementById(elementIdFor(id))
+        ?.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
+    }, 60);
+  };
+  const toggle = (id: string) => (isOpen: boolean) =>
+    setOpenId((cur) => (isOpen ? id : cur === id ? null : cur));
+  const finish = () => {
+    setOpenId(null);
+    setTab("preview");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+  const nextFor = (id: string) => {
+    const n = nextStep(steps, id);
+    return n
+      ? { label: `Next: ${n.label} →`, onClick: () => goTo(n.id) }
+      : { label: "Done — see my resume ✓", onClick: finish };
+  };
+  const addSection = (type: SectionType) => {
+    const s = newSection(type);
+    setSections([...sections, s]);
+    goTo(s.id);
+  };
+  const present = new Set(sections.map((s) => s.type));
+  const suggestions = SECTION_TYPES.filter((t) => t === "custom" || !present.has(t));
+
   const statusLine = (
     <p
       role="status"
       aria-live="polite"
       className={`text-sm ${status.kind === "error" || status.kind === "conflict" || status.kind === "offline" ? "font-medium text-danger" : "text-muted"}`}
     >
+      {status.kind === "saved" && (
+        <span aria-hidden="true" className="mr-1 text-emerald-600">
+          ✓
+        </span>
+      )}
       {statusText(status, now)}
       {status.kind === "conflict" && (
         <>
@@ -108,12 +154,35 @@ export function Editor({
 
   const editPanel = (
     <div className="space-y-4">
-      <AtsPanel resumeId={resumeId} flush={flush} />
+      <StepsBar steps={steps} percent={percent} openId={openId} onOpen={goTo} />
+
+      {percent >= 80 && (
+        <div className="ready-banner flex flex-wrap items-center gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
+          <span aria-hidden="true" className="text-2xl">
+            🎉
+          </span>
+          <div className="min-w-0 flex-1">
+            <p className="font-semibold text-emerald-900">
+              {percent === 100 ? "Your resume is complete!" : "Your resume is almost ready!"}
+            </p>
+            <p className="text-sm text-emerald-900/80">
+              Download the PDF, or tailor it to a job post first for a better match.
+            </p>
+          </div>
+          <Link href={`/resumes/${resumeId}/tailor`} className={buttonClass.secondary}>
+            ✨ Tailor to a job
+          </Link>
+        </div>
+      )}
+
       <PersonalForm
         resumeId={resumeId}
         personal={doc.content.personal}
         settings={doc.settings}
         hasPhoto={hasPhoto}
+        open={openId === PERSONAL_STEP}
+        onToggle={toggle(PERSONAL_STEP)}
+        next={nextFor(PERSONAL_STEP)}
         onPersonal={(personal) => setDoc((d) => ({ ...d, content: { ...d.content, personal } }))}
         onSettings={(settings) => setDoc((d) => ({ ...d, settings }))}
         onPhotoChanged={(has) => {
@@ -134,40 +203,39 @@ export function Editor({
           section={section}
           index={i}
           count={sections.length}
-          open={i === 0}
+          open={openId === section.id}
+          onToggle={toggle(section.id)}
+          next={nextFor(section.id)}
           onChange={(next) => setSections(sections.map((s) => (s.id === next.id ? next : s)))}
           onMove={(d) => moveSection(i, d)}
           onRemove={() => setSections(sections.filter((s) => s.id !== section.id))}
         />
       ))}
 
-      <div className="flex flex-wrap items-end gap-2 rounded-xl border border-dashed border-border p-4">
-        <div className="min-w-48 flex-1">
-          <label htmlFor="add-section" className="block text-sm font-medium">
-            Add a section
-          </label>
-          <select
-            id="add-section"
-            value={addType}
-            onChange={(e) => setAddType(e.target.value as SectionType)}
-            className={inputClass}
-          >
-            {SECTION_TYPES.map((t) => (
-              <option key={t} value={t}>
-                {SECTIONS[t].label}
-              </option>
-            ))}
-          </select>
+      <section
+        aria-labelledby="add-section-heading"
+        className="rounded-2xl border border-dashed border-border/70 p-4"
+      >
+        <h2 id="add-section-heading" className="font-semibold">
+          Add a section
+        </h2>
+        <p className="mt-0.5 text-sm text-muted">Only add what helps for the job you want.</p>
+        <div className="mt-3 flex flex-wrap gap-2">
+          {suggestions.map((t) => (
+            <button
+              key={t}
+              type="button"
+              disabled={sections.length >= 25}
+              onClick={() => addSection(t)}
+              className="inline-flex items-center gap-1.5 rounded-full border border-border/50 bg-white px-3 py-1.5 text-sm font-medium transition hover:-translate-y-0.5 hover:border-primary/60 hover:text-primary active:scale-[0.97] disabled:opacity-50 motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+            >
+              <span aria-hidden="true">{SECTION_ICONS[t]}</span>+ {SECTIONS[t].label}
+            </button>
+          ))}
         </div>
-        <button
-          type="button"
-          className={buttonClass.secondary}
-          disabled={sections.length >= 25}
-          onClick={() => setSections([...sections, newSection(addType)])}
-        >
-          + Add
-        </button>
-      </div>
+      </section>
+
+      <AtsPanel resumeId={resumeId} flush={flush} />
     </div>
   );
 
@@ -191,10 +259,11 @@ export function Editor({
 
   return (
     <AiProvider value={{ resumeId, block: ai.block, credits: ai.credits, flush }}>
-      <main className="mx-auto w-full max-w-7xl flex-1 px-4 pb-28 pt-6 lg:pb-10">
-        <div className="flex flex-wrap items-end gap-3">
-          <div className="min-w-56 flex-1">
-            <label htmlFor="resume-title" className="block text-sm font-medium">
+      <main className="mx-auto w-full max-w-7xl flex-1 px-4 pt-5 pb-28 lg:pb-10">
+        {/* Toolbar: name · template · tailor/share · download */}
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-3">
+          <div className="min-w-0 flex-1 basis-full sm:basis-72">
+            <label htmlFor="resume-title" className="sr-only">
               Resume name (only you see this)
             </label>
             <input
@@ -202,11 +271,12 @@ export function Editor({
               value={doc.title}
               maxLength={100}
               onChange={(e) => setDoc((d) => ({ ...d, title: e.target.value }))}
-              className={inputClass}
+              className="w-full rounded-lg border border-transparent bg-transparent px-2 py-1 font-[family-name:var(--font-bricolage)] text-2xl font-bold hover:border-border/50 focus:border-primary focus:bg-white"
             />
+            <p className="px-2 text-xs text-muted">Resume name — only you see this</p>
           </div>
-          <div>
-            <label htmlFor="template" className="block text-sm font-medium">
+          <div className="flex flex-wrap items-center gap-2 sm:flex-none">
+            <label htmlFor="template" className="sr-only">
               Template
             </label>
             <select
@@ -215,30 +285,36 @@ export function Editor({
               onChange={(e) =>
                 setDoc((d) => ({ ...d, templateSlug: e.target.value as TemplateSlug }))
               }
-              className={inputClass}
+              className="rounded-lg border border-border bg-white px-3 py-2 font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
             >
               {TEMPLATE_OPTIONS.map((t) => (
                 <option key={t.slug} value={t.slug}>
-                  {t.name}
+                  Template: {t.name}
                 </option>
               ))}
             </select>
+            <Link
+              href={`/resumes/${resumeId}/tailor`}
+              className={`${buttonClass.secondary} py-2 text-sm`}
+            >
+              ✨ Tailor
+            </Link>
+            <Link
+              href={`/resumes/${resumeId}/share`}
+              className={`${buttonClass.secondary} py-2 text-sm`}
+            >
+              Share
+            </Link>
+            {isDesktop && downloadDialog}
           </div>
-          <Link href={`/resumes/${resumeId}/tailor`} className={buttonClass.secondary}>
-            ✨ Tailor to a job
-          </Link>
-          <Link href={`/resumes/${resumeId}/share`} className={buttonClass.secondary}>
-            Share link
-          </Link>
-          {isDesktop && downloadDialog}
         </div>
-        <div className="mt-2 hidden lg:block">{statusLine}</div>
+        <div className="mt-1 hidden px-2 lg:block">{statusLine}</div>
 
         {/* Mobile: Edit | Preview tabs (plan 5.4) */}
         <div
           role="tablist"
           aria-label="Editor view"
-          className="mt-4 grid grid-cols-2 rounded-lg bg-primary-soft p-1 lg:hidden"
+          className="mt-4 grid grid-cols-2 rounded-xl bg-primary-soft p-1 lg:hidden"
         >
           {(["edit", "preview"] as const).map((t) => (
             <button
@@ -247,9 +323,9 @@ export function Editor({
               aria-selected={tab === t}
               type="button"
               onClick={() => setTab(t)}
-              className={`rounded-md py-2 font-medium ${tab === t ? "bg-white shadow-sm" : "text-muted"}`}
+              className={`rounded-lg py-2 font-medium transition ${tab === t ? "bg-white shadow-sm" : "text-muted"}`}
             >
-              {t === "edit" ? "Edit" : "Preview"}
+              {t === "edit" ? "✏️ Edit" : "👁 Preview"}
             </button>
           ))}
         </div>
@@ -268,7 +344,7 @@ export function Editor({
         </div>
 
         {/* Mobile sticky bar: save status · preview · download */}
-        <div className="fixed inset-x-0 bottom-0 z-10 border-t border-border/40 bg-white px-4 py-3 lg:hidden">
+        <div className="fixed inset-x-0 bottom-0 z-10 border-t border-border/40 bg-white/95 px-4 py-3 backdrop-blur lg:hidden">
           <div className="mx-auto flex max-w-7xl items-center gap-3">
             <div className="min-w-0 flex-1">{statusLine}</div>
             <button

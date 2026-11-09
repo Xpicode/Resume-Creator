@@ -49,7 +49,8 @@ export function AiNotice() {
           <Link href="/signup" className="font-medium text-primary underline">
             Create one
           </Link>{" "}
-          — your resume comes with you.
+          — your resume comes with you. Already signed up? Open the confirmation link in your email
+          first.
         </p>
       );
     case "unverified":

@@ -16,9 +16,11 @@ describe("merge ticket", () => {
       JSON.stringify({ anon: "victim", exp: Date.now() + 60_000 }),
     ).toString("base64url");
     expect(readMergeTicket(`${forged}.${sig}`, secret)).toBeNull();
-    expect(readMergeTicket(`${payload}.x${sig.slice(1)}`, secret)).toBeNull();
+    // Always change the first character (swapping in a fixed "x" was a no-op 1 time in 64).
+    const tampered = `${sig[0] === "x" ? "y" : "x"}${sig.slice(1)}`;
+    expect(readMergeTicket(`${payload}.${tampered}`, secret)).toBeNull();
     expect(readMergeTicket(ticket, "another-secret-another-secret-00000")).toBeNull();
-    expect(readMergeTicket(ticket, secret, Date.now() + 16 * 60_000)).toBeNull();
+    expect(readMergeTicket(ticket, secret, Date.now() + 61 * 60_000)).toBeNull();
     expect(readMergeTicket(undefined, secret)).toBeNull();
     expect(readMergeTicket("garbage", secret)).toBeNull();
   });

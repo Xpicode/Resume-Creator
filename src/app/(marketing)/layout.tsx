@@ -58,6 +58,10 @@ export default function MarketingLayout({ children }: LayoutProps<"/">) {
           <a href={`mailto:${SUPPORT_EMAIL}`} className="underline">
             {SUPPORT_EMAIL}
           </a>
+          {/* Small on purpose: only the owner needs it. The page itself stays noindex. */}
+          <Link href="/admin-login" className="text-muted/70 underline" rel="nofollow">
+            Admin
+          </Link>
         </div>
       </footer>
     </>

@@ -10,6 +10,8 @@ import {
   type Personal,
   type ResumeSettings,
 } from "@/features/resume/schema";
+import { personalDone } from "./progress";
+import { StepStatus } from "./section-card";
 
 type Props = {
   resumeId: string;
@@ -19,6 +21,9 @@ type Props = {
   onPersonal: (p: Personal) => void;
   onSettings: (s: ResumeSettings) => void;
   onPhotoChanged: (hasPhoto: boolean) => void;
+  open: boolean;
+  onToggle: (open: boolean) => void;
+  next: { label: string; onClick: () => void };
 };
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -31,6 +36,9 @@ export function PersonalForm({
   onPersonal,
   onSettings,
   onPhotoChanged,
+  open,
+  onToggle,
+  next,
 }: Props) {
   const set = (key: keyof Personal, value: string) => onPersonal({ ...personal, [key]: value });
   const show = settings.show ?? {};
@@ -77,14 +85,35 @@ export function PersonalForm({
     onPersonal({ ...personal, links: links.map((l, k) => (k === i ? { ...l, ...patch } : l)) });
 
   return (
-    <details id="personal-info" open className="group rounded-xl border border-border/60 bg-white">
-      <summary className="flex cursor-pointer list-none items-center justify-between p-4 font-semibold">
-        Personal information
+    <details
+      id="personal-info"
+      open={open}
+      onToggle={(e) => onToggle(e.currentTarget.open)}
+      className="group scroll-mt-24 rounded-2xl border border-border/50 bg-white transition-shadow open:border-primary/40 open:shadow-[0_14px_36px_-26px_rgb(30_58_138/0.7)]"
+    >
+      <summary className="flex cursor-pointer list-none items-center gap-3 p-4">
+        <span
+          aria-hidden="true"
+          className="grid size-9 shrink-0 place-items-center rounded-xl bg-primary-soft text-lg"
+        >
+          👤
+        </span>
+        <span className="min-w-0 flex-1 font-[family-name:var(--font-bricolage)] text-lg font-bold">
+          Personal information
+        </span>
+        <StepStatus done={personalDone(personal)} />
         <span aria-hidden className="text-muted transition group-open:rotate-180">
           ▾
         </span>
       </summary>
-      <div className="space-y-4 border-t border-border/40 p-4">
+      <div className="card-body space-y-4 border-t border-border/40 p-4">
+        <p className="flex gap-2 rounded-xl bg-primary-soft p-3 text-sm">
+          <span aria-hidden="true">💡</span>
+          <span>
+            Your name, a professional email and a mobile number are all an employer needs to reach
+            you. Birthdate, civil status and the like are optional — under “More options”.
+          </span>
+        </p>
         <div className="grid gap-3 sm:grid-cols-2">
           {text("firstName", "First name", {
             max: 60,
@@ -244,6 +273,11 @@ export function PersonalForm({
             </div>
           </div>
         </details>
+        <div className="flex justify-end border-t border-border/40 pt-4">
+          <button type="button" className={buttonClass.primary} onClick={next.onClick}>
+            {next.label}
+          </button>
+        </div>
       </div>
     </details>
   );

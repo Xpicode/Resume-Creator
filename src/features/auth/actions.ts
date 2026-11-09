@@ -5,6 +5,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { mergeGuestInto } from "@/features/account/admin-ops";
+import { isAdmin } from "@/lib/admin";
 import { getUser, safeNext, siteOrigin } from "@/lib/auth";
 import { serverEnv } from "@/lib/env";
 import { PRIVACY_POLICY_VERSION, TERMS_VERSION } from "@/lib/legal";
@@ -84,10 +85,17 @@ export async function signUpWithEmail(_prev: FormState, fd: FormData): Promise<F
   // Supabase returns a fake user (no identities) when the email is taken — no consents, and the same
   // message either way so nobody can test which emails have accounts.
   if (data.user?.identities?.length) await recordConsents(supabaseAdmin(), data.user.id);
+
+  // Email confirmation switched off (local testing): signed in already, so move the guest's resume
+  // now instead of in /auth/callback.
+  if (data.session && data.user) {
+    if (current?.is_anonymous) await mergeGuestInto(supabaseAdmin(), current.id, data.user.id);
+    (await cookies()).delete(MERGE_COOKIE);
+    redirect("/dashboard");
+  }
   return {
     status: "success",
-    message:
-      "Check your email for a link to confirm your account. Already have one? Log in instead — your resume comes with you.",
+    message: `Almost done! We sent a confirmation link to ${parsed.data.email}. Open it in this browser within an hour to finish — your resume moves to your new account automatically. Already have an account? Log in instead.`,
   };
 }
 
@@ -112,6 +120,28 @@ export async function logIn(_prev: FormState, fd: FormData): Promise<FormState> 
   }
   if (guest?.is_anonymous) await mergeGuestInto(supabaseAdmin(), guest.id, data.user.id);
   redirect(safeNext(field(fd, "next")));
+}
+
+/**
+ * Admin login (/admin-login): password only, no guest merge. A non-admin account is signed straight
+ * back out, with the same message as a wrong password so the page can't be used to find admin emails.
+ */
+export async function adminLogIn(_prev: FormState, fd: FormData): Promise<FormState> {
+  const parsed = z
+    .object({ email, password: z.string().min(1).max(72) })
+    .safeParse({ email: field(fd, "email"), password: field(fd, "password") });
+  if (!parsed.success) return fail("Enter your email and password.");
+
+  const supabase = await createClient();
+  const { data, error } = await supabase.auth.signInWithPassword({
+    ...parsed.data,
+    options: { captchaToken: captcha(fd) },
+  });
+  if (error || !isAdmin(data.user)) {
+    if (!error) await supabase.auth.signOut();
+    return fail("Wrong email or password, or this account can't open the admin area.");
+  }
+  redirect("/admin");
 }
 
 export async function continueWithGoogle(fd: FormData): Promise<void> {

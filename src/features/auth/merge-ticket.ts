@@ -8,7 +8,9 @@ import { createHmac, timingSafeEqual } from "node:crypto";
  */
 
 export const MERGE_COOKIE = "merge_ticket";
-export const MERGE_TTL_SECONDS = 15 * 60;
+// As long as Supabase's email confirmation link (1 hour by default), so a guest who confirms
+// later in that hour still keeps their resume.
+export const MERGE_TTL_SECONDS = 60 * 60;
 
 const b64 = (s: string) => Buffer.from(s).toString("base64url");
 const sign = (payload: string, secret: string) =>

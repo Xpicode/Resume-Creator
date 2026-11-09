@@ -6,6 +6,7 @@ import { Turnstile } from "@/components/turnstile";
 import { buttonClass, ConsentCheckbox, Field, FormMessage } from "@/components/ui";
 import {
   acceptTerms,
+  adminLogIn,
   continueWithGoogle,
   logIn,
   requestPasswordReset,
@@ -129,6 +130,37 @@ export function LoginForm({ next, notice }: { next?: string; notice?: string }) 
         </Link>
       </p>
     </div>
+  );
+}
+
+export function AdminLoginForm() {
+  const [state, action, pending] = useActionState(adminLogIn, idle);
+  return (
+    <form action={action} className="space-y-4">
+      <Field
+        label="Admin email"
+        id="email"
+        name="email"
+        type="email"
+        autoComplete="username"
+        required
+        maxLength={254}
+      />
+      <Field
+        label="Password"
+        id="password"
+        name="password"
+        type="password"
+        autoComplete="current-password"
+        required
+        maxLength={72}
+      />
+      <Turnstile action="login" resetKey={state} />
+      <button type="submit" disabled={pending} className={`${buttonClass.primary} w-full`}>
+        {pending ? "Checking…" : "Log in to admin"}
+      </button>
+      <FormMessage state={state} />
+    </form>
   );
 }
 

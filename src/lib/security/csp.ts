@@ -12,6 +12,7 @@ export const APP_PATH_PREFIXES = [
   "/settings",
   "/billing",
   "/admin",
+  "/admin-login",
   "/onboarding",
   "/login",
   "/signup",
