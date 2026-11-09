@@ -1,21 +1,30 @@
 @import "tailwindcss";
 
-/* Design tokens (plan Section 5.6). Light mode only in v1. */
+/*
+ * Design tokens (plan Section 5.6). Light mode only in v1.
+ * Direction: the Filipino job application — bond paper, blue ballpen, a highlighter, and the
+ * long brown envelope everyone carries their requirements in (kraft is used only there).
+ */
 :root {
-  --background: #ffffff;
-  --foreground: #0f172a;
+  --background: #ffffff; /* bond paper */
+  --desk: #f1f4f9; /* the table the papers sit on */
+  --foreground: #0f172a; /* ink */
   --muted: #475569;
   --border: #94a3b8;
-  --primary: #1e3a8a;
+  --primary: #1e3a8a; /* ballpen blue */
   --primary-soft: #eef2fb;
-  --accent: #c2410c;
-  --accent-hover: #9a3412;
+  --accent: #1e3a8a; /* main buttons are ballpen blue too */
+  --accent-hover: #172e6e;
+  --highlight: #ffe45c; /* highlighter */
+  --kraft: #c9a06a; /* long brown envelope */
+  --kraft-dark: #a97c45;
   --danger: #b91c1c;
   --success: #15803d;
 }
 
 @theme inline {
   --color-background: var(--background);
+  --color-desk: var(--desk);
   --color-foreground: var(--foreground);
   --color-muted: var(--muted);
   --color-border: var(--border);
@@ -23,12 +32,270 @@
   --color-primary-soft: var(--primary-soft);
   --color-accent: var(--accent);
   --color-accent-hover: var(--accent-hover);
+  --color-highlight: var(--highlight);
+  --color-kraft: var(--kraft);
+  --color-kraft-dark: var(--kraft-dark);
   --color-danger: var(--danger);
   --color-success: var(--success);
   --font-sans: var(--font-inter);
+  --font-display: var(--font-bricolage);
+}
+
+html {
+  scroll-padding-top: 5rem; /* sticky header shouldn't cover #pricing / #templates */
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-bricolage), var(--font-inter), sans-serif;
+  letter-spacing: -0.015em;
+}
+
+:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* ── Highlighter: a yellow swipe behind a few words ───────────────────────────────────────── */
+.mark {
+  background-image: linear-gradient(
+    100deg,
+    transparent 0.2em,
+    var(--highlight) 0.2em,
+    var(--highlight) calc(100% - 0.15em),
+    transparent calc(100% - 0.15em)
+  );
+  background-repeat: no-repeat;
+  background-position: 0 88%;
+  background-size: 100% 0.42em;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+
+/* ── FAQ: + turns into × ───────────────────────────────────────────────────────────────────── */
+.faq summary {
+  list-style: none;
+}
+.faq summary::-webkit-details-marker {
+  display: none;
+}
+.faq-icon {
+  transition: rotate 200ms ease;
+}
+.faq[open] .faq-icon {
+  rotate: 45deg;
+}
+
+/* ── Template "papers" on the desk ────────────────────────────────────────────────────────── */
+.paper-tilt {
+  transition:
+    rotate 250ms ease,
+    translate 250ms ease,
+    box-shadow 250ms ease;
+}
+.paper-tilt:hover {
+  rotate: 0deg;
+  translate: 0 -6px;
+  box-shadow: 0 18px 40px -18px rgb(15 23 42 / 0.35);
+}
+
+/* ── Scrolling strip of PH sections ─────────────────────────────────────────────────────── */
+.marquee {
+  overflow: hidden;
+  mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+}
+.marquee-track {
+  display: flex;
+  width: max-content;
+  gap: 0.75rem;
+}
+
+/* ── AI demo bits ─────────────────────────────────────────────────────────────────────────── */
+.caret {
+  display: inline-block;
+  width: 2px;
+  height: 1.1em;
+  margin-left: 2px;
+  vertical-align: -0.15em;
+  background: var(--primary);
+}
+.chip {
+  transition:
+    opacity 300ms ease,
+    transform 300ms cubic-bezier(0.3, 1.4, 0.5, 1);
+  transition-delay: calc(var(--i, 0) * 110ms + 150ms);
+}
+/* "armed" = JS is ready and motion is allowed: hide the finished demo until it scrolls in. */
+.armed:not(.is-on) .chip {
+  opacity: 0;
+  transform: translateY(6px) scale(0.96);
+}
+.armed:not(.is-on) .typed {
+  visibility: hidden;
+}
+
+/* ── Motion: everything below only runs if the visitor hasn't asked for reduced motion ───── */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Hero: the resume slides out of the envelope, the 2x2 clips on, the highlighter swipes. */
+  .anim-slide-out {
+    animation: slide-out 900ms cubic-bezier(0.2, 0.8, 0.2, 1) 250ms both;
+  }
+  .anim-clip-on {
+    animation: clip-on 450ms cubic-bezier(0.3, 1.4, 0.5, 1) 1050ms both;
+  }
+  .anim-fade-up {
+    animation: fade-up 600ms ease-out both;
+  }
+  .anim-delay-1 {
+    animation-delay: 120ms;
+  }
+  .anim-delay-2 {
+    animation-delay: 240ms;
+  }
+  .anim-delay-3 {
+    animation-delay: 360ms;
+  }
+  .mark-animate {
+    animation: highlight 650ms ease-out 800ms both;
+  }
+
+  /* PH sections strip drifts sideways; pauses when you point at it. */
+  .marquee-track {
+    animation: marquee 45s linear infinite;
+  }
+  .marquee:hover .marquee-track {
+    animation-play-state: paused;
+  }
+
+  .caret {
+    animation: blink 1s steps(1) infinite;
+  }
+  .sparkle {
+    animation: twinkle 2.4s ease-in-out infinite;
+    transform-origin: center;
+  }
+  .sparkle-delay {
+    animation-delay: 1.2s;
+  }
+
+  /* Sections ease in as they scroll into view (browsers without scroll timelines just show them). */
+  @supports (animation-timeline: view()) {
+    .reveal {
+      animation: fade-up linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 45%; /* done early, so blocks near the page end never stay faded */
+    }
+    /* "How it works": the line between the steps draws itself as you scroll. */
+    .draw-line {
+      transform-origin: left;
+      animation: draw linear both;
+      animation-timeline: view();
+      animation-range: entry 20% cover 45%;
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Still: the strip becomes a wrapped list, chips just appear. */
+  .marquee {
+    mask-image: none;
+  }
+  .marquee-track {
+    flex-wrap: wrap;
+    justify-content: center;
+    width: auto;
+  }
+  .marquee-copy {
+    display: none;
+  }
+  .paper-tilt,
+  .faq-icon {
+    transition: none;
+  }
+  .paper-tilt:hover {
+    translate: none;
+  }
+}
+
+@keyframes slide-out {
+  from {
+    transform: translateY(42%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes clip-on {
+  from {
+    opacity: 0;
+    transform: translateY(-14px) rotate(-12deg);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) rotate(-4deg);
+  }
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes highlight {
+  from {
+    background-size: 0% 0.42em;
+  }
+  to {
+    background-size: 100% 0.42em;
+  }
+}
+
+@keyframes marquee {
+  to {
+    transform: translateX(calc(-50% - 0.375rem));
+  }
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+@keyframes twinkle {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: scale(0.75) rotate(0deg);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.1) rotate(20deg);
+  }
+}
+
+@keyframes draw {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
 }

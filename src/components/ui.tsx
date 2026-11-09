@@ -8,13 +8,13 @@ export const inputClass =
 
 export const buttonClass = {
   primary:
-    "inline-flex items-center justify-center rounded-lg bg-accent px-5 py-3 font-semibold text-white hover:bg-accent-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:opacity-60",
+    "inline-flex items-center justify-center rounded-lg bg-accent px-5 py-3 font-semibold text-white shadow-[0_6px_16px_-8px_rgb(30_58_138/0.7)] hover:bg-accent-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:opacity-60 transition duration-150 active:scale-[0.98] motion-reduce:transition-none motion-reduce:active:scale-100",
   secondary:
-    "inline-flex items-center justify-center rounded-lg border border-border bg-white px-4 py-2.5 font-medium hover:bg-primary-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:opacity-60",
+    "inline-flex items-center justify-center rounded-lg border border-border bg-white px-4 py-2.5 font-medium hover:bg-primary-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:opacity-60 transition duration-150 active:scale-[0.98] motion-reduce:transition-none motion-reduce:active:scale-100",
   ghost:
-    "inline-flex items-center justify-center rounded-lg px-3 py-2 font-medium text-primary hover:bg-primary-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:opacity-40",
+    "inline-flex items-center justify-center rounded-lg px-3 py-2 font-medium text-primary hover:bg-primary-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:opacity-40 transition duration-150 active:scale-[0.98] motion-reduce:transition-none motion-reduce:active:scale-100",
   danger:
-    "inline-flex items-center justify-center rounded-lg bg-danger px-4 py-2.5 font-semibold text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:opacity-60",
+    "inline-flex items-center justify-center rounded-lg bg-danger px-4 py-2.5 font-semibold text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:opacity-60 transition duration-150 active:scale-[0.98] motion-reduce:transition-none motion-reduce:active:scale-100",
 };
 
 export function Field({
