@@ -3,7 +3,8 @@ import type { TemplateProps } from "../render";
 import { base, Sections } from "./parts";
 
 const ACCENT = "#1e3a8a";
-const PHOTO_SIZE = 144; // 2 x 2 inches
+// 1.15 x 1.15 inches: a 2x2 photo at full size crowded the header. ponytail: fixed size, make it a setting if users ask.
+const PHOTO_SIZE = 83; // 72pt = 1 inch
 
 /** Header with a 2x2 photo and a personal details block, for walk-in and printed applications. */
 export function PhTraditional({ view, paperSize, photo }: TemplateProps) {
@@ -38,7 +39,12 @@ export function PhTraditional({ view, paperSize, photo }: TemplateProps) {
           // eslint-disable-next-line jsx-a11y/alt-text -- react-pdf Image has no alt; the PDF is not a web page
           <Image
             src={{ data: photo, format: "jpg" }}
-            style={{ width: PHOTO_SIZE, height: PHOTO_SIZE }}
+            style={{
+              width: PHOTO_SIZE,
+              height: PHOTO_SIZE,
+              borderWidth: 0.75,
+              borderColor: "#cbd5e1",
+            }}
           />
         )}
       </View>
