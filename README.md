@@ -1,36 +1,59 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# PH Resume Builder
 
-## Getting Started
+Resume builder for Filipino job seekers. Full plan: [PH-Resume-Builder-Plan.md](PH-Resume-Builder-Plan.md). Rules for AI coding agents: [AGENTS.md](AGENTS.md).
 
-First, run the development server:
+**Status:** Phase 0 — waitlist page, preview spike, project foundations.
+
+## Run locally
+
+Requires Node.js 20.9+ (CI uses 24).
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+cp .env.example .env.local   # then fill in the Supabase values
+npm run dev                  # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Checks (all must pass before a task is done — see AGENTS.md):
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm run typecheck && npm run lint && npm run format:check && npm test && npm run build
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## One-time setup
 
-## Learn More
+1. **Supabase (staging project, Singapore region):** open SQL Editor and run
+   `supabase/migrations/20261109000000_waitlist.sql`. Put the project URL, secret key and
+   publishable key in `.env.local` (and the first two in Vercel's environment settings).
+   Then `npm test` also runs `tests/rls/`, which proves the browser key cannot read or write the waitlist.
+2. **Cloudflare Turnstile:** `.env.example` holds Cloudflare's test keys (always pass). Create a
+   real widget in the Cloudflare dashboard for staging/production and set
+   `NEXT_PUBLIC_TURNSTILE_SITE_KEY` + `TURNSTILE_SECRET_KEY` in Vercel.
+3. **GitHub repo settings:** turn on CodeQL (Code security → default setup), secret scanning and
+   push protection; protect `main` and require the CI check.
+4. **Vercel:** import the repo. Check the headers on the staging URL at securityheaders.com.
+5. **Before sharing the waitlist link:** set the real privacy contact in `src/lib/site.ts`.
 
-To learn more about Next.js, take a look at the following resources:
+## Where things are
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+| Path                                       | What                                                           |
+| ------------------------------------------ | -------------------------------------------------------------- |
+| `src/app/(marketing)/`                     | Waitlist landing page and Privacy Notice                       |
+| `src/features/waitlist/`                   | Form, server action, Zod schema                                |
+| `src/lib/security/csp.ts` + `src/proxy.ts` | Security headers; nonce CSP for app pages only                 |
+| `src/lib/env.ts`                           | Zod-validated server env                                       |
+| `src/app/spike/preview/`                   | **Throwaway** preview spike — delete once the method is chosen |
+| `supabase/migrations/`                     | SQL migrations (RLS in the same file as each table)            |
+| `tests/unit/`, `tests/rls/`                | Vitest tests                                                   |
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Preview spike (plan 3.2)
 
-## Deploy on Vercel
+Open `/spike/preview` on a low/mid-range Android phone (same Wi-Fi: `npm run build && npm start`,
+then `http://<your-PC-IP>:3000/spike/preview`, or use the Vercel preview URL). Tap each option a
+few times and note the timings and text sharpness. Server-side results measured on the dev PC:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+| Option                  | Server render | Download               |
+| ----------------------- | ------------- | ---------------------- |
+| PDF (for pdf.js)        | ~330 ms       | 16 KB + pdf.js library |
+| A: image, PNG (2x)      | ~250–430 ms   | 231 KB                 |
+| A: image, WebP q90 (2x) | ~250–310 ms   | 94 KB                  |
