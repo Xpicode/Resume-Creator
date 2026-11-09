@@ -227,6 +227,9 @@ export function Editor({
           <Link href={`/resumes/${resumeId}/tailor`} className={buttonClass.secondary}>
             ✨ Tailor to a job
           </Link>
+          <Link href={`/resumes/${resumeId}/share`} className={buttonClass.secondary}>
+            Share link
+          </Link>
           {isDesktop && downloadDialog}
         </div>
         <div className="mt-2 hidden lg:block">{statusLine}</div>

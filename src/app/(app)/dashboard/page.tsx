@@ -4,9 +4,14 @@ import { redirect } from "next/navigation";
 import { buttonClass } from "@/components/ui";
 import { createResume, deleteResume, duplicateResume } from "@/features/resume/actions";
 import { creditsLeft } from "@/features/ai/guard";
+import { PASS, peso } from "@/features/billing/plans";
+import { activePass, dateFmt } from "@/features/billing/status";
 import { ConfirmButton } from "@/features/resume/confirm-button";
 import { requireUser } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
+
+// Checks the login on every visit, so navigating here waits for the server (plan 6.3).
+export const instant = false;
 
 export const metadata: Metadata = { title: "My resumes" };
 
@@ -33,21 +38,28 @@ export default async function DashboardPage({ searchParams }: PageProps<"/dashbo
     supabase.from("profiles").select("onboarding_goal").eq("id", user.id).maybeSingle(),
   ]);
   if (!profile?.onboarding_goal && !resumes?.length) redirect("/onboarding");
+  const [pass, credits] = user.is_anonymous
+    ? [null, 0]
+    : await Promise.all([activePass(supabase, user.id), creditsLeft(supabase, user.id)]);
 
   return (
     <main className="mx-auto w-full max-w-4xl flex-1 px-4 py-8">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h1 className="text-2xl font-bold">My resumes</h1>
         {!user.is_anonymous && (
-          <span className="rounded-full bg-primary-soft px-3 py-1 text-sm">
-            Free plan · {await creditsLeft(supabase, user.id)} AI credits left this month
-          </span>
+          <Link href="/billing" className="rounded-full bg-primary-soft px-3 py-1 text-sm">
+            {pass ? `${PASS.name} until ${dateFmt.format(new Date(pass.endsAt))}` : "Free plan"} ·{" "}
+            {credits} AI credits left
+          </Link>
         )}
       </div>
       {params.limit && (
         <p role="alert" className="mt-4 rounded-lg bg-primary-soft p-3 text-sm">
-          The free plan includes 1 resume. More resumes and tailored copies come with the Job Hunt
-          Pass (coming soon).
+          The free plan includes 1 resume.{" "}
+          <Link href="/billing" className="font-medium text-primary underline">
+            Get the {PASS.name}
+          </Link>{" "}
+          ({peso(PASS.amountCentavos)} for {PASS.days} days) for more resumes and tailored copies.
         </p>
       )}
       {params.error && (
@@ -78,6 +90,9 @@ export default async function DashboardPage({ searchParams }: PageProps<"/dashbo
                 </a>
                 <Link href={`/resumes/${r.id}/tailor`} className={buttonClass.ghost}>
                   ✨ Tailor
+                </Link>
+                <Link href={`/resumes/${r.id}/share`} className={buttonClass.ghost}>
+                  Share
                 </Link>
                 <form action={duplicateResume}>
                   <input type="hidden" name="id" value={r.id} />

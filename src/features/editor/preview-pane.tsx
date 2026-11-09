@@ -17,7 +17,7 @@ export function PreviewPane({
 }) {
   const [src, setSrc] = useState<string>();
   const [pages, setPages] = useState(0);
-  const [state, setState] = useState<"loading" | "ready" | "error">("loading");
+  const [state, setState] = useState<"loading" | "ready" | "error" | "busy">("loading");
 
   useEffect(() => {
     if (!active) return;
@@ -32,6 +32,10 @@ export function PreviewPane({
             cache: "no-store",
           },
         );
+        if (res.status === 429) {
+          setState("busy");
+          return;
+        }
         if (!res.ok) throw new Error(String(res.status));
         const url = URL.createObjectURL(await res.blob());
         setPages(Number(res.headers.get("x-page-count") ?? 0));
@@ -58,6 +62,7 @@ export function PreviewPane({
         <span aria-live="polite" className={pages > 2 ? "font-medium text-danger" : "text-muted"}>
           {state === "loading" && "Updating…"}
           {state === "error" && "Preview unavailable — your work is still saved."}
+          {state === "busy" && "Preview paused for a minute — your work is still saved."}
           {state === "ready" &&
             (pages > 2
               ? `${pages} pages — try to keep it to 2 or fewer`
@@ -70,7 +75,7 @@ export function PreviewPane({
           <img
             src={src}
             alt="Preview of your resume"
-            className={`w-full transition ${state === "loading" ? "opacity-60" : ""}`}
+            className={`w-full transition ${state === "loading" || state === "busy" ? "opacity-60" : ""}`}
           />
         ) : (
           <div className="flex aspect-[1/1.414] items-center justify-center text-muted">

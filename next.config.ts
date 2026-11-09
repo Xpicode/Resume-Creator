@@ -10,7 +10,11 @@ const nextConfig: NextConfig = {
   // Native modules used for the preview image and photo processing; must not be bundled.
   serverExternalPackages: ["@napi-rs/canvas", "sharp"],
   // PDF fonts are read from disk at render time; make sure deploys include them.
-  outputFileTracingIncludes: { "/api/resumes/**": ["./src/pdf/fonts/**"] },
+  outputFileTracingIncludes: {
+    "/api/resumes/**": ["./src/pdf/fonts/**"],
+    "/template-previews/**": ["./src/pdf/fonts/**"],
+    "/r/**": ["./src/pdf/fonts/**"],
+  },
   experimental: {
     // Photo uploads go through a Server Action: 5 MB file + form overhead (plan 6.5).
     serverActions: { bodySizeLimit: "6mb" },

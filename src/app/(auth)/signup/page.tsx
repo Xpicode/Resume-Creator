@@ -3,6 +3,9 @@ import { AuthCard } from "@/components/ui";
 import { SignUpForm } from "@/features/auth/forms";
 import { getUser } from "@/lib/auth";
 
+// Checks the login on every visit, so navigating here waits for the server (plan 6.3).
+export const instant = false;
+
 export const metadata: Metadata = { title: "Create your account" };
 
 export default async function SignUpPage() {

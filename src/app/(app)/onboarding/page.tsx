@@ -3,6 +3,9 @@ import { buttonClass } from "@/components/ui";
 import { chooseGoal } from "@/features/resume/actions";
 import { requireUser } from "@/lib/auth";
 
+// Checks the login on every visit, so navigating here waits for the server (plan 6.3).
+export const instant = false;
+
 export const metadata: Metadata = { title: "What describes you?" };
 
 const GOALS = [

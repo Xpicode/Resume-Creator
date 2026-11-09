@@ -25,7 +25,7 @@ const MESSAGES: Record<AiFailure["code"], string> = {
   consent: "Turn on AI features first.",
   unavailable: "AI features aren't available right now.",
   rate: "That's a lot of AI requests at once. Wait a minute and try again.",
-  credits: "You've used this month's AI credits.",
+  credits: "You've used your AI credits. The Job Hunt Pass adds 100 more — see Billing.",
   failed: "The AI couldn't finish that. Try again — you weren't charged a credit.",
   refused: "The AI couldn't help with that text. Try rewording it — you weren't charged a credit.",
 };
@@ -59,18 +59,18 @@ export async function aiBlock(
   return null;
 }
 
-/** Credits left this month (the Free row is created on first use, so none yet = full allowance). */
+/** Credits left now: active pass + this month's Free allowance (created on first use, so none yet = full). */
 export async function creditsLeft(supabase: SupabaseClient, userId: string): Promise<number> {
   const { data } = await supabase
     .from("entitlements")
-    .select("ai_credits_remaining, ends_at, starts_at")
+    .select("plan, ai_credits_remaining, ends_at, starts_at")
     .eq("user_id", userId);
   const now = Date.now();
   const active = (data ?? []).filter(
     (e) => Date.parse(e.starts_at) <= now && (!e.ends_at || Date.parse(e.ends_at) > now),
   );
-  if (!active.length) return FREE_MONTHLY_AI_CREDITS;
-  return active.reduce((sum, e) => sum + e.ai_credits_remaining, 0);
+  const free = active.some((e) => e.plan === "free") ? 0 : FREE_MONTHLY_AI_CREDITS;
+  return active.reduce((sum, e) => sum + e.ai_credits_remaining, free);
 }
 
 /**

@@ -3,7 +3,7 @@ import Link from "next/link";
 import { WAITLIST_CONSENT_VERSION } from "@/features/waitlist/schema";
 import { PRIVACY_EMAIL, SITE_NAME } from "@/lib/site";
 
-export const metadata: Metadata = { title: `Privacy Notice — ${SITE_NAME}` };
+export const metadata: Metadata = { title: "Privacy Notice" };
 
 // Waitlist-only notice for Phase 0. Replaced by the full, lawyer-reviewed Privacy Policy before launch (plan 6.9).
 export default function PrivacyPage() {

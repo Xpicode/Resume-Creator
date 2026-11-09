@@ -1,3 +1,4 @@
 // Bump a version when its page changes; each consent row stores the version the user agreed to (plan 6.8).
-export const PRIVACY_POLICY_VERSION = "2026-11-11-draft";
-export const TERMS_VERSION = "2026-11-10-draft";
+export const PRIVACY_POLICY_VERSION = "2026-11-14-draft";
+export const TERMS_VERSION = "2026-11-12-draft";
+export const REFUND_POLICY_VERSION = "2026-11-12-draft";

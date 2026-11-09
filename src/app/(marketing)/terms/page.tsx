@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { TERMS_VERSION } from "@/lib/legal";
-import { PRIVACY_EMAIL, SITE_NAME } from "@/lib/site";
+import { PRIVACY_EMAIL } from "@/lib/site";
 
-export const metadata: Metadata = { title: `Terms — ${SITE_NAME}` };
+export const metadata: Metadata = { title: "Terms" };
 
 // DRAFT (plan 1A task 7). Must be reviewed by a lawyer before charging money (plan 6.9).
 export default function TermsPage() {
@@ -42,6 +42,18 @@ export default function TermsPage() {
           <p>
             The free plan includes one resume. Guest sessions are deleted after 30 days without use
             — create a free account to keep your work.
+          </p>
+        </section>
+        <section>
+          <h2>Job Hunt Pass</h2>
+          <p>
+            The Job Hunt Pass is a one-time payment for 30 days of extra features. It does not renew
+            by itself. Payments are processed by PayMongo; we never see your full card or wallet
+            details. Refunds follow our{" "}
+            <Link href="/refund-policy" className="text-primary underline">
+              Refund Policy
+            </Link>
+            . When a pass ends or is refunded, you keep your resumes but lose the extra features.
           </p>
         </section>
         <section>

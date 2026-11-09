@@ -9,6 +9,7 @@ import { createClient } from "@/lib/supabase/server";
 import { loadResume, photoPath } from "./queries";
 import { newResumeContent, saveResumeSchema } from "./schema";
 import type { OnboardingGoal } from "./sections";
+import { takeRateLimit } from "@/lib/security/rate-limit";
 
 // Server actions are public HTTP endpoints: auth → validate → authorize → act (plan 6.3).
 
@@ -147,6 +148,8 @@ export async function uploadPhoto(id: string, fd: FormData): Promise<PhotoResult
   const supabase = await createClient();
   const loaded = await loadResume(supabase, user.id, id);
   if (!loaded.ok) return { ok: false, message: "Resume not found." };
+  if (!(await takeRateLimit(user.id, "photo")))
+    return { ok: false, message: "You've uploaded a lot of photos. Please try again in an hour." };
 
   const file = fd.get("photo");
   if (!(file instanceof File) || file.size === 0)

@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { PRIVACY_POLICY_VERSION } from "@/lib/legal";
-import { PRIVACY_EMAIL, SITE_NAME } from "@/lib/site";
+import { PRIVACY_EMAIL } from "@/lib/site";
 
-export const metadata: Metadata = { title: `Privacy Policy — ${SITE_NAME}` };
+export const metadata: Metadata = { title: "Privacy Policy" };
 
 // DRAFT (plan 1A task 7). Must be reviewed by a lawyer before charging money (plan 6.9).
 export default function PrivacyPolicyPage() {
@@ -53,9 +53,11 @@ export default function PrivacyPolicyPage() {
           <h2>Who processes it for us</h2>
           <p>
             Supabase (database, login and file storage, servers in Singapore), Vercel (hosting),
-            Cloudflare (bot protection), Anthropic (AI suggestions, only if you turn AI features on)
-            and our email provider. Your data may be processed outside the Philippines by these
-            providers, under agreements that require them to protect it.
+            Cloudflare (bot protection), Anthropic (AI suggestions, only if you turn AI features
+            on), PayMongo (payments, only if you buy a pass), Sentry (error reports, without your
+            resume text or contact details) and our email provider. Your data may be processed
+            outside the Philippines by these providers, under agreements that require them to
+            protect it.
           </p>
         </section>
         <section>
@@ -67,6 +69,26 @@ export default function PrivacyPolicyPage() {
             suggestion. We keep a record of each AI request (feature, model and size — not the text)
             to manage costs and limits. Tailoring suggestions are deleted after 90 days, and job
             posts are deleted with their resume. You can turn AI off anytime in Settings.
+          </p>
+        </section>
+        <section>
+          <h2>Public links</h2>
+          <p>
+            Your resume is private unless you create a share link. Anyone with that link can see the
+            resume and download it as a PDF. Your phone, email and full address are hidden on the
+            link unless you choose to show them; your photo and optional personal details
+            (birthdate, civil status and similar) are never shown. Links are hidden from search
+            engines unless you allow it. We count how many times a link is opened, but not who
+            opened it. Turning a link off makes it stop working immediately.
+          </p>
+        </section>
+        <section>
+          <h2>Payments</h2>
+          <p>
+            If you buy a pass, PayMongo handles your payment and emails your receipt. We keep a
+            record of the payment (amount, date, status and PayMongo&apos;s reference) — never your
+            card or wallet details. Because the law requires us to keep sales records, this record
+            stays after you delete your account, but it is no longer linked to you.
           </p>
         </section>
         <section>

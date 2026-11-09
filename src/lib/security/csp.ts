@@ -20,6 +20,18 @@ export const APP_PATH_PREFIXES = [
 ] as const;
 
 const TURNSTILE_ORIGIN = "https://challenges.cloudflare.com";
+// "Get the pass" redirects to PayMongo's hosted checkout (without JS this is a form-POST redirect).
+const PAYMONGO_CHECKOUT_ORIGIN = "https://checkout.paymongo.com";
+
+/** Sentry's ingest host, only when error tracking is turned on. */
+function sentryOrigin(): string {
+  const dsn = process.env.NEXT_PUBLIC_SENTRY_DSN;
+  try {
+    return dsn ? ` ${new URL(dsn).origin}` : "";
+  } catch {
+    return "";
+  }
+}
 
 function join(directives: string[]): string {
   return directives.join("; ");
@@ -30,12 +42,12 @@ function shared(isDev: boolean): string[] {
     "default-src 'self'",
     "img-src 'self' blob: data:",
     "font-src 'self'",
-    "connect-src 'self'",
+    `connect-src 'self'${sentryOrigin()}`,
     `frame-src ${TURNSTILE_ORIGIN}`,
     "worker-src 'self' blob:",
     "object-src 'none'",
     "base-uri 'self'",
-    "form-action 'self'",
+    `form-action 'self' ${PAYMONGO_CHECKOUT_ORIGIN}`,
     "frame-ancestors 'none'",
     ...(isDev ? [] : ["upgrade-insecure-requests"]),
   ];

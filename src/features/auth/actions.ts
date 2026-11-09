@@ -1,11 +1,11 @@
 "use server";
 
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { cookies, headers } from "next/headers";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { mergeGuestInto } from "@/features/account/admin-ops";
-import { getUser, safeNext } from "@/lib/auth";
+import { getUser, safeNext, siteOrigin } from "@/lib/auth";
 import { serverEnv } from "@/lib/env";
 import { PRIVACY_POLICY_VERSION, TERMS_VERSION } from "@/lib/legal";
 import { supabaseAdmin } from "@/lib/supabase/admin";
@@ -24,14 +24,6 @@ const captcha = (fd: FormData) => field(fd, "cf-turnstile-response") || undefine
 const email = z.string().trim().toLowerCase().pipe(z.email().max(254));
 const password = z.string().min(10, "Use at least 10 characters.").max(72);
 const CONSENT_MESSAGE = "Please agree to the Privacy Policy and Terms to continue.";
-
-async function siteOrigin(): Promise<string> {
-  // Redirect URLs are also checked against Supabase's allow-list, so a forged Host can't redirect elsewhere.
-  const h = await headers();
-  const host = h.get("x-forwarded-host") ?? h.get("host") ?? "localhost:3000";
-  const proto = h.get("x-forwarded-proto") ?? (host.startsWith("localhost") ? "http" : "https");
-  return `${proto}://${host}`;
-}
 
 async function recordConsents(client: SupabaseClient, userId?: string) {
   const rows = [

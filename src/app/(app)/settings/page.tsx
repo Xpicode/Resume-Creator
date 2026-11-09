@@ -7,6 +7,9 @@ import { creditsLeft, hasAiConsent } from "@/features/ai/guard";
 import { hasRecentLogin, requireUser } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 
+// Checks the login on every visit, so navigating here waits for the server (plan 6.3).
+export const instant = false;
+
 export const metadata: Metadata = { title: "Settings" };
 
 const CONSENT_LABELS: Record<string, string> = {

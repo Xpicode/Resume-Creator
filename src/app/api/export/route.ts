@@ -1,4 +1,5 @@
 import { getUser, hasRecentLogin } from "@/lib/auth";
+import { takeRateLimit, tooManyRequests } from "@/lib/security/rate-limit";
 import { createClient } from "@/lib/supabase/server";
 import { NO_STORE } from "@/features/resume/route-helpers";
 
@@ -10,28 +11,33 @@ export async function GET(request: Request) {
     return Response.redirect(new URL("/login?reauth=1&next=/settings", request.url), 303);
   }
 
+  if (!(await takeRateLimit(user.id, "export"))) return tooManyRequests("export");
+
   const supabase = await createClient();
   const own = (table: string, columns: string) =>
     supabase.from(table).select(columns).eq("user_id", user.id);
-  const [profile, resumes, consents, jobPosts, suggestions, usage, plans] = await Promise.all([
-    supabase
-      .from("profiles")
-      .select("display_name, onboarding_goal, locale, created_at")
-      .eq("id", user.id)
-      .maybeSingle(),
-    supabase
-      .from("resumes")
-      .select("id, title, template_slug, paper_size, settings, content, created_at, updated_at")
-      .eq("user_id", user.id),
-    supabase
-      .from("consents")
-      .select("consent_type, version, granted_at, withdrawn_at")
-      .eq("user_id", user.id),
-    own("job_targets", "resume_id, company, position, job_description, created_at"),
-    own("ai_suggestions", "resume_id, feature, payload, status, created_at"),
-    own("ai_usage", "feature, model, input_tokens, output_tokens, status, created_at"),
-    own("entitlements", "plan, ai_credits_remaining, starts_at, ends_at"),
-  ]);
+  const [profile, resumes, consents, jobPosts, suggestions, usage, plans, payments, shares] =
+    await Promise.all([
+      supabase
+        .from("profiles")
+        .select("display_name, onboarding_goal, locale, created_at")
+        .eq("id", user.id)
+        .maybeSingle(),
+      supabase
+        .from("resumes")
+        .select("id, title, template_slug, paper_size, settings, content, created_at, updated_at")
+        .eq("user_id", user.id),
+      supabase
+        .from("consents")
+        .select("consent_type, version, granted_at, withdrawn_at")
+        .eq("user_id", user.id),
+      own("job_targets", "resume_id, company, position, job_description, created_at"),
+      own("ai_suggestions", "resume_id, feature, payload, status, created_at"),
+      own("ai_usage", "feature, model, input_tokens, output_tokens, status, created_at"),
+      own("entitlements", "plan, ai_credits_remaining, starts_at, ends_at"),
+      own("payments", "plan, amount_centavos, currency, status, paid_at, refunded_at, created_at"),
+      own("resume_shares", "resume_id, slug, show_contact, allow_indexing, views, created_at"),
+    ]);
 
   const body = {
     exported_at: new Date().toISOString(),
@@ -47,6 +53,8 @@ export async function GET(request: Request) {
     ai_suggestions: suggestions.data ?? [],
     ai_usage: usage.data ?? [],
     plans: plans.data ?? [],
+    payments: payments.data ?? [],
+    share_links: shares.data ?? [],
     note: "Profile photos are not included in this file. Download them from the resume editor.",
   };
   return new Response(JSON.stringify(body, null, 2), {

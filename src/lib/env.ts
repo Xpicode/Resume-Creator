@@ -11,6 +11,12 @@ const serverEnvSchema = z.object({
   CRON_SECRET: z.string().min(16).optional(),
   // AI features show "not available" without it (plan 7). Server only.
   ANTHROPIC_API_KEY: z.string().min(20).optional(),
+  // Payments show "not available" without both (plan Phase 3A). sk_test_… or sk_live_…; whsk_…
+  PAYMONGO_SECRET_KEY: z
+    .string()
+    .regex(/^sk_(test|live)_/)
+    .optional(),
+  PAYMONGO_WEBHOOK_SECRET: z.string().min(10).optional(),
 });
 
 export type ServerEnv = z.infer<typeof serverEnvSchema>;

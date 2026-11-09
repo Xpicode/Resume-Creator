@@ -3,6 +3,9 @@ import { AuthCard } from "@/components/ui";
 import { LoginForm } from "@/features/auth/forms";
 import { getUser, safeNext } from "@/lib/auth";
 
+// Checks the login on every visit, so navigating here waits for the server (plan 6.3).
+export const instant = false;
+
 export const metadata: Metadata = { title: "Log in" };
 
 const NOTICES: Record<string, string> = {

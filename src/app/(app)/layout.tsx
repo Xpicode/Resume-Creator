@@ -3,7 +3,7 @@ import { connection } from "next/server";
 import { buttonClass } from "@/components/ui";
 import { logOut } from "@/features/auth/actions";
 import { requireUser } from "@/lib/auth";
-import { SITE_NAME } from "@/lib/site";
+import { SITE_NAME, SUPPORT_EMAIL } from "@/lib/site";
 
 // Logged-in area: strict nonce CSP needs per-request rendering (plan 6.6), and every page
 // reads the session anyway. Each page still calls requireUser() itself (plan 6.3).
@@ -22,6 +22,11 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
           <Link href="/dashboard" className="text-sm font-medium">
             My resumes
           </Link>
+          {!user.is_anonymous && (
+            <Link href="/billing" className="text-sm font-medium">
+              Billing
+            </Link>
+          )}
           <Link href="/settings" className="text-sm font-medium">
             Settings
           </Link>
@@ -48,6 +53,15 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
         </p>
       )}
       {children}
+      <footer className="mx-auto w-full max-w-6xl px-4 py-6 text-sm text-muted">
+        Found a problem or have an idea?{" "}
+        <a
+          href={`mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(`${SITE_NAME} feedback`)}`}
+          className="font-medium text-primary underline"
+        >
+          Send feedback
+        </a>
+      </footer>
     </>
   );
 }

@@ -49,6 +49,12 @@ export async function mergeGuestInto(
     .eq("user_id", guestId)
     .select("id");
   if (moveError) throw moveError;
+  // Share links follow their resume, so a link the guest already sent keeps working.
+  const { error: shareError } = await admin
+    .from("resume_shares")
+    .update({ user_id: targetId })
+    .eq("user_id", guestId);
+  if (shareError) throw shareError;
 
   for (const path of await listPhotoPaths(admin, guestId)) {
     const to = `${targetId}/${path.slice(guestId.length + 1)}`;
@@ -64,6 +70,13 @@ export async function mergeGuestInto(
 export async function deleteOldAiSuggestions(admin: SupabaseClient): Promise<void> {
   const cutoff = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString();
   const { error } = await admin.from("ai_suggestions").delete().lt("created_at", cutoff);
+  if (error) throw error;
+}
+
+/** Cleanup job: rate-limit counters only matter for a day (the longest window). */
+export async function deleteOldRateLimitHits(admin: SupabaseClient): Promise<void> {
+  const cutoff = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString();
+  const { error } = await admin.from("rate_limit_hits").delete().lt("created_at", cutoff);
   if (error) throw error;
 }
 

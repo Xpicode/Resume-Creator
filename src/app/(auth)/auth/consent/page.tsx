@@ -4,6 +4,9 @@ import { AuthCard } from "@/components/ui";
 import { ConsentForm } from "@/features/auth/forms";
 import { getUser, safeNext } from "@/lib/auth";
 
+// Checks the login on every visit, so navigating here waits for the server (plan 6.3).
+export const instant = false;
+
 export const metadata: Metadata = { title: "One more step" };
 
 export default async function ConsentPage({ searchParams }: PageProps<"/auth/consent">) {

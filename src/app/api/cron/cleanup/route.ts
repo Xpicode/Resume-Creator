@@ -1,5 +1,9 @@
 import { timingSafeEqual } from "node:crypto";
-import { deleteOldAiSuggestions, deleteStaleGuests } from "@/features/account/admin-ops";
+import {
+  deleteOldAiSuggestions,
+  deleteOldRateLimitHits,
+  deleteStaleGuests,
+} from "@/features/account/admin-ops";
 import { serverEnv } from "@/lib/env";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 
@@ -17,5 +21,6 @@ export async function GET(request: Request) {
   const admin = supabaseAdmin();
   const deleted = await deleteStaleGuests(admin);
   await deleteOldAiSuggestions(admin);
+  await deleteOldRateLimitHits(admin);
   return Response.json({ deleted }, { headers: { "Cache-Control": "no-store" } });
 }

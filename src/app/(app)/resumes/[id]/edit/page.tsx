@@ -7,6 +7,9 @@ import { hasPhoto, loadResume } from "@/features/resume/queries";
 import { requireUser } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 
+// Checks the login on every visit, so navigating here waits for the server (plan 6.3).
+export const instant = false;
+
 export const metadata: Metadata = { title: "Edit resume" };
 
 export default async function EditResumePage({ params }: PageProps<"/resumes/[id]/edit">) {
