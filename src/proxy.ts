@@ -1,19 +1,43 @@
+import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { appCsp } from "@/lib/security/csp";
 
 /**
- * Sets the strict nonce CSP on app pages only (plan Section 6.6).
- * Session refresh is added here in Phase 1. Never make auth decisions here (Section 6.3).
+ * App pages only: (1) strict nonce CSP (plan 6.6), (2) refresh the Supabase session cookie,
+ * because Server Components can't write cookies. Never makes auth decisions (plan 6.3) —
+ * every page, action and route checks the user itself.
  */
-export function proxy(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const nonce = Buffer.from(crypto.randomUUID()).toString("base64");
   const csp = appCsp(nonce, process.env.NODE_ENV === "development");
 
-  const requestHeaders = new Headers(request.headers);
-  requestHeaders.set("x-nonce", nonce);
-  requestHeaders.set("Content-Security-Policy", csp);
+  const forward = () => {
+    // Rebuilt after any cookie refresh so the page sees the new session.
+    const headers = new Headers(request.headers);
+    headers.set("x-nonce", nonce);
+    headers.set("Content-Security-Policy", csp);
+    return NextResponse.next({ request: { headers } });
+  };
 
-  const response = NextResponse.next({ request: { headers: requestHeaders } });
+  let response = forward();
+  const url = process.env.SUPABASE_URL;
+  const key = process.env.SUPABASE_PUBLISHABLE_KEY;
+
+  if (url && key) {
+    const supabase = createServerClient(url, key, {
+      cookies: {
+        getAll: () => request.cookies.getAll(),
+        setAll(toSet, headers) {
+          for (const { name, value } of toSet) request.cookies.set(name, value);
+          response = forward();
+          for (const { name, value, options } of toSet) response.cookies.set(name, value, options);
+          for (const [k, v] of Object.entries(headers ?? {})) response.headers.set(k, v);
+        },
+      },
+    });
+    await supabase.auth.getUser();
+  }
+
   response.headers.set("Content-Security-Policy", csp);
   response.headers.set("Cache-Control", "private, no-store");
   return response;
@@ -32,5 +56,6 @@ export const config = {
     "/signup/:path*",
     "/forgot-password/:path*",
     "/auth/:path*",
+    "/start/:path*",
   ],
 };

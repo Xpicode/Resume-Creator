@@ -7,10 +7,14 @@ const nextConfig: NextConfig = {
   cacheComponents: true,
   partialPrefetching: true,
   poweredByHeader: false,
-  // Native canvas used by the Phase 0 preview spike; must not be bundled.
-  serverExternalPackages: ["@napi-rs/canvas"],
+  // Native modules used for the preview image and photo processing; must not be bundled.
+  serverExternalPackages: ["@napi-rs/canvas", "sharp"],
   // PDF fonts are read from disk at render time; make sure deploys include them.
-  outputFileTracingIncludes: { "/spike/preview/**": ["./src/pdf/fonts/**"] },
+  outputFileTracingIncludes: { "/api/resumes/**": ["./src/pdf/fonts/**"] },
+  experimental: {
+    // Photo uploads go through a Server Action: 5 MB file + form overhead (plan 6.5).
+    serverActions: { bodySizeLimit: "6mb" },
+  },
   turbopack: {
     rules: {
       "*.css": {

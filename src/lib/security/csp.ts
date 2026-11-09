@@ -16,6 +16,7 @@ export const APP_PATH_PREFIXES = [
   "/signup",
   "/forgot-password",
   "/auth",
+  "/start",
 ] as const;
 
 const TURNSTILE_ORIGIN = "https://challenges.cloudflare.com";

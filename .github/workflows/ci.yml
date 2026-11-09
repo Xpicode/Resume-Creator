@@ -15,7 +15,7 @@ concurrency:
 jobs:
   check:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     env:
       # Cloudflare's public "always passes" test key — real keys live in Vercel env settings.
       NEXT_PUBLIC_TURNSTILE_SITE_KEY: 1x00000000000000000000AA
@@ -29,5 +29,19 @@ jobs:
       - run: npm run typecheck
       - run: npm run lint
       - run: npm run format:check
+
+      # Local Supabase in Docker so the RLS / account tests run for real (plan 1B task 11).
+      - name: Start Supabase
+        run: npx supabase start -x studio,imgproxy,vector,logflare,supavisor,edge-runtime,realtime,postgres-meta,mailpit
+      - name: Export Supabase keys
+        run: |
+          npx supabase status -o json | node -e '
+            let s = ""; process.stdin.on("data", d => s += d).on("end", () => {
+              const j = JSON.parse(s);
+              console.log(`SUPABASE_URL=${j.API_URL}`);
+              console.log(`SUPABASE_PUBLISHABLE_KEY=${j.PUBLISHABLE_KEY}`);
+              console.log(`SUPABASE_SECRET_KEY=${j.SECRET_KEY}`);
+            });' >> "$GITHUB_ENV"
+
       - run: npm test
       - run: npm run build

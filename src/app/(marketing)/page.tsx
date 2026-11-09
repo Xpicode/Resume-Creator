@@ -53,9 +53,18 @@ export default function Home() {
         </section>
       </main>
 
-      <footer className="mx-auto w-full max-w-2xl px-4 py-8 text-sm text-muted">
+      <footer className="mx-auto flex w-full max-w-2xl flex-wrap gap-4 px-4 py-8 text-sm text-muted">
+        <Link href="/start" className="font-medium text-primary underline">
+          Beta tester? Start your resume →
+        </Link>
         <Link href="/privacy" className="underline">
           Privacy Notice
+        </Link>
+        <Link href="/privacy-policy" className="underline">
+          Privacy Policy
+        </Link>
+        <Link href="/terms" className="underline">
+          Terms
         </Link>
       </footer>
     </>

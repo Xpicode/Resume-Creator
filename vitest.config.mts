@@ -2,10 +2,10 @@ import { fileURLToPath } from "node:url";
 import { existsSync } from "node:fs";
 import { defineConfig } from "vitest/config";
 
-// Lets the RLS tests reach your staging Supabase project; they skip when the vars are missing.
+// Lets the RLS tests reach your local/staging Supabase; they skip when the vars are missing.
 if (existsSync(".env.local")) process.loadEnvFile(".env.local");
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   resolve: {
     alias: {
       "@": fileURLToPath(new URL("./src", import.meta.url)),
@@ -15,6 +15,8 @@ export default defineConfig({
   },
   test: {
     environment: "node",
-    include: ["tests/**/*.test.ts"],
+    // `npm run ai:eval` (--mode eval) runs only the live AI eval, which costs money. Never in `npm test` or CI.
+    include: mode === "eval" ? ["tests/eval/**/*.eval.ts"] : ["tests/**/*.test.ts"],
+    fileParallelism: mode !== "eval",
   },
-});
+}));
