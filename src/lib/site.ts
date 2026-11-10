@@ -13,5 +13,5 @@ export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:30
 // How customers pay directly (shown on the Billing page).
 export const DIRECT_PAYMENT = {
   method: "GCash",
-  account: "0954 154 0971",
+  account: "0954 154 0971 (Kian Cedrick A.)",
 };
